@@ -31,7 +31,7 @@ class GAN():
     many final images as needed.
     """
 
-    def __init__(self, fullIMGXRes, fullIMGYRes, chunkIMGXRes, chunkIMGYRes, EPOCHS):
+    def __init__(self, commonVars):
         """
         Initialization of all variables needed
         """
@@ -40,10 +40,10 @@ class GAN():
         #2048x2048 is more than 7.3GB of vRAM for the Master DISC model
 
         #Resolutions & Amount of Chunks
-        self.fullXRes = fullIMGXRes
-        self.fullYRes = fullIMGYRes
-        self.chunkXRes = chunkIMGXRes
-        self.chunkYRes = chunkIMGYRes
+        self.fullXRes = commonVars.fullIMGXRes
+        self.fullYRes = commonVars.fullIMGYRes
+        self.chunkXRes = commonVars.chunkIMGXRes
+        self.chunkYRes = commonVars.chunkIMGYRes
         self.chunks = int((self.fullXRes**2)/(self.chunkXRes**2))
 
         #Getting the current training chunk and setting up the next trainging chunk
@@ -72,7 +72,7 @@ class GAN():
         self.totalDiscLoss = [0]
 
         #Setting the number of EPOCHS and size of latent space
-        self.EPOCHS = EPOCHS
+        self.EPOCHS = commonVars.totalEPOCHS
         self.latentSize = 100
 
         #Setting up chosen dataset to be used
@@ -488,7 +488,7 @@ def getWGeneratorLoss(fakePredictions):
 commonVariables = common.Common()
 
 #Naming the AI
-CAS = GAN(fullIMGXRex=128, fullIMGYRex=128, chunkIMGXRes=128, chunkIMGYRes=128, EPOCHS=100)
+CAS = GAN(commonVariables)
 
 #Running the code
 CAS.main()
