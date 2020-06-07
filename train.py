@@ -12,31 +12,36 @@ from timeit import default_timer as timer
 import tensorflow as tf
 import numpy as np
 
+#First Party Imports
+import utilities
+from constants import Constants
+from preprocess import Preprocess
+from tunableVariables import Tunable
 
 class Train():
     """
     Combination of training functions to use in other files
     """
 
-    def __init__(self, commonVars, preproVars):
+    def __init__(self, preprocessVars):
         """
         Initialization of all variables needed
         """
 
         #Resolutions & Amount of Chunks
-        self.fullXRes = commonVars.fullIMGXRes
-        self.fullYRes = commonVars.fullIMGYRes
-        self.chunkXRes = commonVars.chunkIMGXRes
-        self.chunkYRes = commonVars.chunkIMGYRes
-        self.chunks = int((self.fullXRes**2)/(self.chunkXRes**2))
+        self.fullXRes = Tunable.fullIMGXRes
+        self.fullYRes = Tunable.fullIMGYRes
+        self.chunkXRes = Tunable.chunkIMGXRes
+        self.chunkYRes = Tunable.chunkIMGYRes
+        self.chunks = Tunable.chunks
 
         #Setting the number of EPOCHS and size of latent space
-        self.EPOCHS = commonVars.totalEPOCHS
-        self.latentSize = commonVars.latentSize
+        self.EPOCHS = Tunable.totalEPOCHS
+        self.latentSize = Tunable.latentSize
 
         #Setting the training dataset and the current chunk
-        self.trainDataset = preproVars.trainDataset
-        self.trainingChunk = preproVars.trainingChunk
+        self.trainDataset = preprocessVars.trainDataset
+        self.trainingChunk = preprocessVars.trainingChunk
 
         #Setting up list for average loss of epochs and chunks
         self.epochGenLoss = [2]
@@ -45,10 +50,10 @@ class Train():
         self.totalDiscLoss = [0]
 
         #Setting the generator and discriminators optimizers
-        self.discriminatorOptimizer = tf.optimizers.Adam()
-        self.generatorOptimizer = tf.optimizers.Adam()
+        self.discriminatorOptimizer = tf.optimizers.Adam(1e-4)
+        self.generatorOptimizer = tf.optimizers.Adam(1e-4)
         #self.discriminatorOptimizer = tf.optimizers.RMSprop(1e-4)
-        #self.generatorOptimizer = tf.optimizers.RMSprop(1e-5)
+        #self.generatorOptimizer = tf.optimizers.RMSprop(1e-4)
 
         #initializing discriminator and gnerator variables
         self.discriminatorModel = None
@@ -64,18 +69,14 @@ class Train():
         """
 
         self.discriminatorModel = tf.keras.Sequential()
-        self.discriminatorModel.add(tf.keras.layers.Conv2D(7, (3, 3), padding="same", input_shape=(self.chunkXRes, self.chunkYRes, 3)))
-        self.discriminatorModel.add(tf.keras.layers.Flatten())
+        self.discriminatorModel.add(tf.keras.layers.Conv2D(Tunable.convFilters, (3, 3), padding="same", input_shape=(self.chunkXRes, self.chunkYRes, 3)))
         self.discriminatorModel.add(tf.keras.layers.LeakyReLU())
-        self.discriminatorModel.add(tf.keras.layers.Dropout(0.4))
+        self.discriminatorModel.add(tf.keras.layers.Dropout(Tunable.dropout))
 
         self.discriminatorModel.add(tf.keras.layers.Dense(128, activation="relu"))
-        self.discriminatorModel.add(tf.keras.layers.Dropout(0.4))
-        self.discriminatorModel.add(tf.keras.layers.Dense(128, activation="relu"))
-        self.discriminatorModel.add(tf.keras.layers.Dropout(0.4))
-        self.discriminatorModel.add(tf.keras.layers.Dense(64, activation="relu"))
-        self.discriminatorModel.add(tf.keras.layers.Dropout(0.4))
+        self.discriminatorModel.add(tf.keras.layers.Dropout(Tunable.dropout))
 
+        self.discriminatorModel.add(tf.keras.layers.Flatten())
         self.discriminatorModel.add(tf.keras.layers.Dense(1, activation="sigmoid"))
 
     def makeGeneratorModel(self):
@@ -140,8 +141,8 @@ class Train():
             realOutput = self.discriminatorModel(images)
             fakeOutput = self.discriminatorModel(generatedImages)
             #Getting gradient or loss
-            genLoss = getGeneratorLoss(fakeOutput)
-            discLoss = getDiscriminatorLoss(realOutput, fakeOutput)
+            genLoss = utilities.getGeneratorLoss(fakeOutput)
+            discLoss = utilities.getDiscriminatorLoss(realOutput, fakeOutput)
             #Find gradient
             gradientsOfGen = genTape.gradient(genLoss, self.generatorModel.trainable_variables)
             gradientsOfDisc = discTape.gradient(discLoss, self.discriminatorModel.trainable_variables)
@@ -169,40 +170,3 @@ class Train():
                                  fr"landscapeGEN{self.fullXRes}x{self.fullYRes}res-{self.EPOCHS}epochs-{self.latentSize}latent.model")
         fullStop = timer()
         print(f"Training {self.EPOCHS} epochs finished in: {str(datetime.timedelta(seconds=int(fullStop-fullStart)))}")
-
-
-#No-self-use functions
-def getDiscriminatorLoss(realPredictions, fakePredictions):
-    """
-    Getting the discriminator loss through a
-    binary-crossentropy loss function
-    """
-    #Could need try: except statement
-    realPredictions = tf.math.sigmoid(realPredictions)
-    fakePredictions = tf.math.sigmoid(fakePredictions)
-    realLoss = tf.losses.binary_crossentropy(tf.ones_like(realPredictions), realPredictions)
-    fakeLoss = tf.losses.binary_crossentropy(tf.zeros_like(fakePredictions), fakePredictions)
-    return fakeLoss+realLoss
-
-def getGeneratorLoss(fakePredictions):
-    """
-    Getting the generator loss through a
-    binary-crossentropy loss function
-    """
-    fakePredictions = tf.math.sigmoid(fakePredictions)
-    fakeLoss = tf.losses.binary_crossentropy(tf.ones_like(fakePredictions), fakePredictions)
-    return fakeLoss
-
-def getWDiscriminatorLoss(realPredictions, fakePredictions):
-    """
-    Getting the discriminator loss through a
-    wasserstien loss function
-    """
-    return tf.reduce_mean(realPredictions) - tf.reduce_mean(fakePredictions)
-
-def getWGeneratorLoss(fakePredictions):
-    """
-    Getting the generator loss through a
-    wasserstien loss function
-    """
-    return -tf.reduce_mean(fakePredictions)

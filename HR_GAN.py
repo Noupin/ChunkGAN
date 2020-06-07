@@ -8,10 +8,9 @@ __author__ = "Noupin"
 
 
 #First Party Imports
-import common
-import preprocess
 import train
 import display
+from preprocess import Preprocess
 
 
 class Master():
@@ -30,13 +29,12 @@ class Master():
         #480p 2.39:1 720x302
         #2048x2048 is more than 7.3GB of vRAM for the Master DISC model
 
-        #Variables that the user would want to change for the output.
-        self.commonVars = common.Common()
-        self.preproVars = preprocess.Preprocess(self.commonVars)
+        #Loading the preprocessed data
+        preprocessVars = Preprocess()
 
         #The training and display of the trained models
-        self.modelTrain = train.Train(self.commonVars, self.preproVars)
-        self.disp = display.Display(self.commonVars, self.preproVars)
+        self.modelTrain = train.Train(preprocessVars)
+        self.disp = display.Display(preprocessVars)
 
     def main(self):
         """
@@ -58,8 +56,5 @@ CAS.main()
 '''
 save and apply weights instead of saving and loading models
 fix the image loading into the file so the whole set of images is never all in the RAM like it is near the end of setupData
-add the ability to load instead of make new models on the first chunk
 then load the overall discriminator and pass the stitched images that were stored in a list to be discriminated like 0
-training looks like the colors were applied differetly to the chunks check that
-separate into setup data, train models, and use models in different files
 '''
