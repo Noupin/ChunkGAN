@@ -24,7 +24,7 @@ for i in range(0, int(totalRunTimes)):
             json.dump(-1, trainingChunkFile)
     chunkStop = timer()
 
-    if int(totalRunTimes-i > 1):
+    if int(totalRunTimes)-i > 1:
         print(f"With {int(totalRunTimes)-i} chunks left it will take: "+
             f"{datetime.timedelta(seconds=int((int(totalRunTimes)-i)*(chunkStop-chunkStart)))}")
 
