@@ -1,21 +1,22 @@
+#pylint: disable=C0103, C0301
+"""
+Trains the a model given the dimesntions of traingin images,
+epochs and latent size
+"""
 __author__ = "Noupin"
 
 #Third Party Imports
-import os
-import random
-import math
 import datetime
-import json
 from statistics import mean
 from timeit import default_timer as timer
-import cv2
-from PIL import Image
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
 
 
 class Train():
+    """
+    Combination of training functions to use in other files
+    """
 
     def __init__(self, commonVars, preproVars):
         """

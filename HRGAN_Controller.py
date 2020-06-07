@@ -1,10 +1,10 @@
-__author__ = "Noupin, KeeKee"
-
 #pylint: disable=C0103
 """
 Ensures the HighResGAN.py runs for all chunks and
 finishes traingin of all chunks.
 """
+__author__ = "Noupin, KeeKee"
+
 
 import sys
 import subprocess
@@ -26,7 +26,7 @@ for i in range(0, int(totalRunTimes)):
 
     if int(totalRunTimes)-i > 1:
         print(f"With {int(totalRunTimes)-i} chunks left it will take: "+
-            f"{datetime.timedelta(seconds=int((int(totalRunTimes)-i)*(chunkStop-chunkStart)))}")
+              f"{datetime.timedelta(seconds=int((int(totalRunTimes)-i)*(chunkStop-chunkStart)))}")
 
 fullStop = timer()
 

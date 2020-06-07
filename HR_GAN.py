@@ -1,27 +1,11 @@
-__author__ = "Noupin"
-
 #pylint: disable=C0103, E1101, C0301, W0105
 """
 Makes, trains and shows the images from a GAN. The generated
 images can be chunked to allowe for better perfromance and
 higher resolution generated images than with a single model.
 """
-#Refactor for Preprocessing, Training, DisplayGenIMG
+__author__ = "Noupin"
 
-
-#Third Party Imports
-import os
-import random
-import math
-import datetime
-import json
-from statistics import mean
-from timeit import default_timer as timer
-import cv2
-from PIL import Image
-import tensorflow as tf
-import matplotlib.pyplot as plt
-import numpy as np
 
 #First Party Imports
 import common
@@ -53,7 +37,7 @@ class Master():
         #The training and display of the trained models
         self.modelTrain = train.Train(self.commonVars, self.preproVars)
         self.disp = display.Display(self.commonVars, self.preproVars)
-    
+
     def main(self):
         """
         Uses the first party imports and executes the code to be use together

@@ -1,20 +1,21 @@
+#pylint: disable=C0103, C0301
+"""
+Displays the final images after stiching the chunked images together
+"""
 __author__ = "Noupin"
 
 #Third Party Imports
-import os
-import random
 import math
-import datetime
 import json
-from statistics import mean
-from timeit import default_timer as timer
-import cv2
 from PIL import Image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 
 class Display():
+    """
+    Combination of display functions to use in other files
+    """
 
     def __init__(self, commonVars, preproVars):
         """

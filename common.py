@@ -1,9 +1,9 @@
-__author__ = "Noupin"
-
 #pylint: disable=C0103
 """
 A model for the commonly used variables in HighResGAN.py
 """
+__author__ = "Noupin"
+
 
 class Common():
     """

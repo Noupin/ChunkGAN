@@ -1,17 +1,17 @@
+#pylint: disable=C0103, C0301, E1101
+"""
+Preprocess the images to be used in training
+"""
 __author__ = "Noupin"
 
 #Third Party Imports
 import os
 import random
 import math
-import datetime
 import json
-from statistics import mean
-from timeit import default_timer as timer
 import cv2
 from PIL import Image
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -19,7 +19,7 @@ class Preprocess():
     """
     Prepares the images for use to train the AI model
     """
-    
+
     def __init__(self, commonVars):
         """
         Initialization of all variables needed
@@ -80,7 +80,7 @@ class Preprocess():
         print(f"\n\nThe Dataset size is: {int(self.datasetSize/4)} images and {self.datasetSize} color composited images\n\nThe Chunk size is {self.chunkXRes}x"+
               f"{self.chunkYRes} with {self.chunks} chunks\n\nThere are {self.datasetSize*self.chunks} total chunked images\n\nThe BATCH_SIZE is: {self.BATCH_SIZE}"+
               f"\n\nTotal Resolution: {self.chunkXRes}x{self.chunkYRes}\n\n")
-        
+
         self.createLatentPoints()
 
     def imgSlice(self, image):
@@ -172,7 +172,7 @@ class Preprocess():
 
     def createDataset(self):
         """
-        Creating the dataset from a given filepath 
+        Creating the dataset from a given filepath
         pointing to a folder of images
         """
         if self.trainingChunk == 0: #Only setup and chunk images on the first chunk
