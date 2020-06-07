@@ -4,6 +4,8 @@ Makes, trains and shows the images from a GAN. The generated
 images can be chunked to allowe for better perfromance and
 higher resolution generated images than with a single model.
 """
+#Refactor for Preprocessing, Training, DisplayGenIMG
+
 
 #Third Party Imports
 import os
@@ -20,7 +22,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #First Party Imports
-#import common
+import common
+import preprocess
+import train
+import display
 
 
 class GAN():

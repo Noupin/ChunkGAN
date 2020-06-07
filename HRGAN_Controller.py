@@ -15,7 +15,7 @@ fullStart = timer()
 
 for i in range(0, int(totalRunTimes)):
     chunkStart = timer()
-    subprocess.run(['python', r"C:\Coding\Python\ML\GAN\HighResGAN.py"], check=True)
+    subprocess.run(['python', r"C:\Coding\Python\ML\GAN\HRGAN.py"], check=True)
     chunkStop = timer()
 
     print(f"With {int(totalRunTimes)-i} chunks left it will take: "+
