@@ -1,3 +1,5 @@
+__author__ = "Noupin"
+
 #pylint: disable=C0103
 """
 A model for the commonly used variables in HighResGAN.py
@@ -12,9 +14,11 @@ class Common():
         """
         Initializing the variables
         """
-        super().__init__()
+
         self.fullIMGXRes = 128
         self.fullIMGYRes = 128
-        self.chunkIMGXRes = 128
-        self.chunkIMGYRes = 128
-        self.totalEPOCHS = 100
+        self.chunkIMGXRes = 64
+        self.chunkIMGYRes = 64
+        self.totalEPOCHS = 50
+        self.latentSize = 100
+        self.chunks = int((self.fullIMGXRes**2)/(self.chunkIMGXRes**2))
