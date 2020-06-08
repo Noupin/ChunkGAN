@@ -22,7 +22,7 @@ def getDiscriminatorLoss(realPredictions, fakePredictions):
     Getting the discriminator loss through a
     binary-crossentropy loss function
     """
-    #Could need try: except statement
+    
     realPredictions = tf.math.sigmoid(realPredictions)
     fakePredictions = tf.math.sigmoid(fakePredictions)
     realLoss = tf.losses.binary_crossentropy(tf.ones_like(realPredictions), realPredictions)

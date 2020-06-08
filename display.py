@@ -47,7 +47,8 @@ class Display():
         Takes the chunked images and stitches them into a full image
         """
 
-        result = Image.new('RGB', (self.fullXRes, self.fullYRes), 255)
+        colorTypeMap = {1: "L", 3: "RGB"}
+        result = Image.new(colorTypeMap[Tunable.colorChannels], (self.fullXRes, self.fullYRes), 255)
         row = 0
         col = 0
         nextRow = int(math.sqrt(self.chunks))
@@ -77,9 +78,13 @@ class Display():
                 generatingModel = tf.keras.models.load_model(fr"C:\Coding\Models\ganModels\HighRes\GEN\chunk{chunk+1}of{self.chunks}"+
                                                                 fr"landscapeGEN{self.fullXRes}x{self.fullYRes}res-{self.EPOCHS}epochs-{self.latentSize}"+
                                                                 r"latent.model", compile=False)
-                imgArr = np.asarray(tf.reshape(generatingModel(latentPoint), (self.chunkXRes, self.chunkYRes, 3)))
+                if Tunable.colorChannels == 3:
+                    imgArr = np.asarray(tf.reshape(generatingModel(latentPoint), (self.chunkXRes, self.chunkYRes, Tunable.colorChannels)))
+                elif Tunable.colorChannels == 1:
+                    imgArr = np.asarray(tf.reshape(generatingModel(latentPoint), (self.chunkXRes, self.chunkYRes)))
+                cmapMap = {1: "gray", 2: plt.cm.bone, 3: None}
                 chunkImgList.append(Image.fromarray((imgArr * 255).astype(np.uint8)))
                 tf.keras.backend.clear_session()
-            plt.imshow(Image.fromarray(np.asarray(self.stitchChunkImg(chunkImgList))))
+            plt.imshow(Image.fromarray(np.asarray(self.stitchChunkImg(chunkImgList))), cmap=cmapMap[Tunable.colorChannels+Tunable.cancerImg])
             plt.show()
             again = input("Press Enter to see the results: ")

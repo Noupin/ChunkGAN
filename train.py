@@ -11,12 +11,16 @@ from statistics import mean
 from timeit import default_timer as timer
 import tensorflow as tf
 import numpy as np
+import wandb
 
 #First Party Imports
 import utilities
 from constants import Constants
 from preprocess import Preprocess
 from tunableVariables import Tunable
+
+
+wandb.init(project="hrgan")
 
 class Train():
     """
@@ -28,38 +32,29 @@ class Train():
         Initialization of all variables needed
         """
 
-        #Resolutions & Amount of Chunks
         self.fullXRes = Tunable.fullIMGXRes
         self.fullYRes = Tunable.fullIMGYRes
         self.chunkXRes = Tunable.chunkIMGXRes
         self.chunkYRes = Tunable.chunkIMGYRes
         self.chunks = Tunable.chunks
 
-        #Setting the number of EPOCHS and size of latent space
         self.EPOCHS = Tunable.totalEPOCHS
         self.latentSize = Tunable.latentSize
 
-        #Setting the training dataset and the current chunk
         self.trainDataset = preprocessVars.trainDataset
         self.trainingChunk = preprocessVars.trainingChunk
 
-        #Setting up list for average loss of epochs and chunks
         self.epochGenLoss = [2]
         self.epochDiscLoss = [0]
         self.totalGenLoss = [2]
         self.totalDiscLoss = [0]
 
-        #Setting the generator and discriminators optimizers
-        self.discriminatorOptimizer = tf.optimizers.Adam(1e-4)
+        self.discriminatorOptimizer = tf.optimizers.Adam(1e-5)
         self.generatorOptimizer = tf.optimizers.Adam(1e-4)
-        #self.discriminatorOptimizer = tf.optimizers.RMSprop(1e-4)
-        #self.generatorOptimizer = tf.optimizers.RMSprop(1e-4)
 
-        #initializing discriminator and gnerator variables
         self.discriminatorModel = None
         self.generatorModel = None
 
-        #Making Discriminator & Generator
         self.makeDiscriminatorModel()
         self.makeGeneratorModel()
 
@@ -69,7 +64,7 @@ class Train():
         """
 
         self.discriminatorModel = tf.keras.Sequential()
-        self.discriminatorModel.add(tf.keras.layers.Conv2D(Tunable.convFilters, (3, 3), padding="same", input_shape=(self.chunkXRes, self.chunkYRes, 3)))
+        self.discriminatorModel.add(tf.keras.layers.Conv2D(Tunable.convFilters, (3, 3), padding="same", input_shape=(self.chunkXRes, self.chunkYRes, Tunable.colorChannels)))
         self.discriminatorModel.add(tf.keras.layers.LeakyReLU())
         self.discriminatorModel.add(tf.keras.layers.Dropout(Tunable.dropout))
 
@@ -77,7 +72,7 @@ class Train():
         self.discriminatorModel.add(tf.keras.layers.Dropout(Tunable.dropout))
 
         self.discriminatorModel.add(tf.keras.layers.Flatten())
-        self.discriminatorModel.add(tf.keras.layers.Dense(1, activation="sigmoid"))
+        self.discriminatorModel.add(tf.keras.layers.Dense(1))
 
     def makeGeneratorModel(self):
         """
@@ -85,7 +80,6 @@ class Train():
         """
 
         self.generatorModel = tf.keras.Sequential()
-        #7*7*256 for 28x28 img and 14*14*256 for 56x56 image so 1 for a 4x4 img
         self.generatorModel.add(tf.keras.layers.Dense(int(self.chunkXRes/4)*int(self.chunkYRes/4)*256, use_bias=False, input_shape=(self.latentSize,)))
         self.generatorModel.add(tf.keras.layers.BatchNormalization())
         self.generatorModel.add(tf.keras.layers.LeakyReLU())
@@ -100,11 +94,11 @@ class Train():
         self.generatorModel.add(tf.keras.layers.BatchNormalization())
         self.generatorModel.add(tf.keras.layers.LeakyReLU())
 
-        self.generatorModel.add(tf.keras.layers.Conv2DTranspose(3, (3, 3), strides=(2, 2), padding="same", use_bias=False, activation="tanh"))
+        self.generatorModel.add(tf.keras.layers.Conv2DTranspose(Tunable.colorChannels, (3, 3), strides=(2, 2), padding="same", use_bias=False, activation="tanh"))
 
     def train(self):
         """
-        Loops throught eh data and feeds the data to trainStep
+        Loops through the data and feeds the data to trainStep
         BATCH_SIZE at a time
         """
 
@@ -117,8 +111,7 @@ class Train():
             self.epochDiscLoss.append(0)
             self.epochGenLoss.append(2)
             start = timer()
-            for images in self.trainDataset:#image.shape is (some #, xRes, yRes, colorChannels) the some # is the BATCH_SIZE
-                #Total trainSteps = (Dataset size or total loaded images/BATCH_SIZE)*epochs
+            for images in self.trainDataset:
                 self.trainStep(images, np.loadtxt(fr"C:\Coding\Python\ML\GAN\HR_GAN\latentSpace\noise{epoch}.txt"))
                 latentPoint += 1
             end = timer()
@@ -126,6 +119,7 @@ class Train():
             print(f"Chunk {self.trainingChunk+1}, Epoch {epoch+1}/{self.EPOCHS} at {self.chunkXRes}x{self.chunkYRes} finished in: {(end-start):.4f} sec")
             print(f"The mean generator loss for epoch {epoch+1} is {mean(self.epochGenLoss)}.")
             print(f"The mean discriminator loss for epoch {epoch+1} is {mean(self.epochDiscLoss)}.\n")
+            wandb.log({"genLoss": mean(self.epochGenLoss), "discLoss": mean(self.epochDiscLoss), "epoch": epoch+1})
         chunkEnd = timer()
         print(f"Chunk {self.trainingChunk+1} finished in: {str(datetime.timedelta(seconds=int(chunkEnd-chunkStart)))}")
         print(f"The total mean generator loss for chunk {self.trainingChunk+1} is {mean(self.totalGenLoss)}.")

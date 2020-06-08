@@ -11,10 +11,12 @@ import subprocess
 import datetime
 from timeit import default_timer as timer
 import json
+import wandb
 
 #First Party Imports
 from constants import Constants
 from tunableVariables import Tunable
+
 
 totalRunTimes = Tunable.chunks
 fullStart = timer()
